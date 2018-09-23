@@ -13,4 +13,4 @@ Learn from TensorFlow中文社区:www.tensorfly.cn/tfdoc/get_started/introductio
 - 2018.9.12：tensorflow-test01.py & noteforstart.md
 
 Play with leetcode
-- 2018.9.22：1-Two Sum.md & 189-Rotate Array.md
+- 2018.9.22：1-Two Sum.md & 189-Rotate Array.md & 283-Move Zeroes.md
