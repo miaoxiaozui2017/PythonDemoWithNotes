@@ -20,7 +20,6 @@
     输出: [4,3,2,2]
     解释: 输入数组表示数字 4321。
 </div>
-
 ```python
 # use python3
 class Solution:
@@ -30,12 +29,12 @@ class Solution:
         :rtype: List[int]
         """
         length = len(digits)
-        digits[length-1] = digits[length-1] + 1
+        digits[length-1] = digits[length-1]+1
         for i in range(1,length+1):
             if digits[length-i] == 10:
                 digits[length-i] = 0
                 if length - i != 0:
-                    digits[length-i-1] = digits[length-i-1] + 1
+                    digits[length-i-1] = digits[length-i-1]+1
                 else:
                     digits.insert(0,1)
         return digits
