@@ -15,4 +15,4 @@ Learn from TensorFlow中文社区:www.tensorfly.cn/tfdoc/get_started/introductio
 Play with leetcode
 - 2018.9.23：1-Two Sum-Easy.md & 189-Rotate Array-Easy.md & 283-Move Zeroes-Easy.md
 - 2018.9.25：66-Plus One-Easy.md & 48-Rotate Image-Medium.md
-- 2018.10.5:7-Reverse Integer-Easy.md & 9-Palindrome Number-Easy.md
+- 2018.10.5:7-Reverse Integer-Easy.md & 9-Palindrome Number-Easy.md & 70-Climbing Stairs-Easy.md
