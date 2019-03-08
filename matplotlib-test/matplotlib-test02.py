@@ -18,6 +18,20 @@ import numpy as np
 #plt.yticks(())  # ignore yticks # 隐藏y轴
 #plt.show()
 
+## - 折线图plot
+## 1.生成数据集
+#M1 = np.array([7,9,2,9,5,3]) # 每一个点的X值
+#M2 = np.array([4,5,9,5,2,2]) # 每一个点的X值
+#result = np.array([8,1,3,5,6,4]) # 每一个点的Y值
+## 2.设置坐标轴和图例
+#plt.xlabel('Error(m)')    # 设置x坐标轴名称
+#plt.ylabel('times(s)')    # 设置y坐标轴名称 
+## 3.显示
+#plt.plot(M1,result,'go-',mfc='w',label='Millimeter-wave radar')  
+#plt.plot(M2,result,'r^-',mfc='w',label='joint')
+#plt.legend()
+#plt.show()
+
 ## - 柱状图Bar
 ## 1.生成数据集
 #n = 12
