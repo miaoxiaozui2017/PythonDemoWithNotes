@@ -1,0 +1,359 @@
+========================================================
+=====================Hello World！======================
+========================================================
+import tensorflow as tf
+
+# Create TensorFlow object called tensor
+hello_constant = tf.constant('Hello World!')
+
+with tf.Session() as sess:
+    # Run the tf.constant operation in the session
+    output = sess.run(hello_constant)
+    print(output)
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+
+[注]
+++++++++++++++++++++++++++++++
+///*Tensor*///
+在 TensorFlow 中，数据不是以整数、浮点数或者字符串形式存储的。这些值被封装在一个叫做 tensor 的对象中。
+------------code--------------
+# A is a 0-dimensional int32 tensor
+A = tf.constant(1234) 
+# B is a 1-dimensional int32 tensor
+B = tf.constant([123,456,789]) 
+ # C is a 2-dimensional int32 tensor
+C = tf.constant([ [123,456,789], [222,333,444] ])
+------------------------------
+tf.constant() 返回的 tensor 是一个常量 tensor，因为这个 tensor 的值不会变。
+++++++++++++++++++++++++++++++
+///*Session*///
+TensorFlow 的 api 构建在 computational graph 的概念上，它是一种对数学运算过程进行可视化的方法。
+一个 "TensorFlow Session" 是用来运行图的环境。这个 session 负责分配 GPU(s) 和／或 CPU(s)，包括远程计算机的运算。
+-------------code-------------
+with tf.Session() as sess:
+    output = sess.run(hello_constant)
+------------------------------
+========================================================
+============想使用一个非常量（non-constant）=============
+========================================================
+# Solution is available in the other "solution.py" tab
+import tensorflow as tf
+
+
+def run():
+    output = None
+    x = tf.placeholder(tf.int32)
+
+    with tf.Session() as sess:
+        # TODO: Feed the x tensor 123
+        output = sess.run(x,feed_dict={x:123})
+
+    return output
+
+run()
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+[注]
+++++++++++++++++++++++++++++++
+///*tf.placeholder() 和 feed_dict*///
+1.tf.placeholder()
+2.用 tf.session.run() 里的 feed_dict 参数设置占位 tensor。
+-------------code 1-----------
+x = tf.placeholder(tf.string)
+
+with tf.Session() as sess:
+    output = sess.run(x, feed_dict={x: 'Hello World'})
+------------------------------
+3.如下所示，也可以用 feed_dict 设置多个 tensor。
+-------------code 2-----------
+x = tf.placeholder(tf.string)
+y = tf.placeholder(tf.int32)
+z = tf.placeholder(tf.float32)
+
+with tf.Session() as sess:
+    output = sess.run(x, feed_dict={x: 'Test String', y: 123, z: 45.67})
+------------------------------
+注意：
+如果传入 feed_dict 的数据与 tensor 类型不符，就无法被正确处理，你会得到 “ValueError: invalid literal for...”。
+========================================================
+=====================TensorFlow 数学====================
+========================================================
+# Quiz Solution
+# Note: You can't run code in this tab
+import tensorflow as tf
+
+# TODO: Convert the following to TensorFlow:
+x = tf.constant(10)
+y = tf.constant(2)
+z = tf.subtract(tf.divide(x,y),tf.cast(tf.constant(1), tf.float64))
+
+# TODO: Print z from a session
+with tf.Session() as sess:
+    output = sess.run(z)
+    print(output)
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+[注]
+++++++++++++++++++++++++++++++
+///*加减乘除*///
+-------------code 1-----------
+x = tf.add(5, 2)  # 7
+------------------------------
+-------------code 2-----------
+x = tf.subtract(10, 4) # 6
+y = tf.multiply(2, 5)  # 10
+------------------------------
+++++++++++++++++++++++++++++++
+///*类型转换*///
+-------------code 1-----------
+tf.subtract(tf.constant(2.0),tf.constant(1))  
+# Fails with ValueError: Tensor conversion requested dtype float32 for Tensor with dtype int32:
+------------------------------
+这是因为常量 1 是整数，但是常量 2.0 是浮点数，subtract 需要它们的类型匹配。
+-------------code 2-----------
+tf.subtract(tf.cast(tf.constant(2.0), tf.int32), tf.constant(1))   # 1
+------------------------------
+========================================================
+=================TensorFlow 分类（1）===================
+========================================================
+# sandbox_solution.py
+import tensorflow as tf
+# Sandbox Solution
+# Note: You can't run code in this tab
+from tensorflow.examples.tutorials.mnist import input_data
+from quiz import get_weights, get_biases, linear
+
+
+def mnist_features_labels(n_labels):
+    """
+    Gets the first <n> labels from the MNIST dataset
+    :param n_labels: Number of labels to use
+    :return: Tuple of feature list and label list
+    """
+    mnist_features = []
+    mnist_labels = []
+
+    mnist = input_data.read_data_sets('/datasets/ud730/mnist', one_hot=True)
+
+    # In order to make quizzes run faster, we're only looking at 10000 images
+    for mnist_feature, mnist_label in zip(*mnist.train.next_batch(10000)):
+
+        # Add features and labels if it's for the first <n>th labels
+        if mnist_label[:n_labels].any():
+            mnist_features.append(mnist_feature)
+            mnist_labels.append(mnist_label[:n_labels])
+
+    return mnist_features, mnist_labels
+
+
+# Number of features (28*28 image is 784 features)
+n_features = 784
+# Number of labels
+n_labels = 3
+
+# Features and Labels
+features = tf.placeholder(tf.float32)
+labels = tf.placeholder(tf.float32)
+
+# Weights and Biases
+w = get_weights(n_features, n_labels)
+b = get_biases(n_labels)
+
+# Linear Function xW + b
+logits = linear(features, w, b)
+
+# Training data
+train_features, train_labels = mnist_features_labels(n_labels)
+
+with tf.Session() as session:
+    session.run(tf.global_variables_initializer())
+
+    # Softmax
+    prediction = tf.nn.softmax(logits)
+
+    # Cross entropy
+    # This quantifies how far off the predictions were.
+    # You'll learn more about this in future lessons.
+    cross_entropy = -tf.reduce_sum(labels * tf.log(prediction), reduction_indices=1)
+
+    # Training loss
+    # You'll learn more about this in future lessons.
+    loss = tf.reduce_mean(cross_entropy)
+
+    # Rate at which the weights are changed
+    # You'll learn more about this in future lessons.
+    learning_rate = 0.08
+
+    # Gradient Descent
+    # This is the method used to train the model
+    # You'll learn more about this in future lessons.
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
+
+    # Run optimizer and get loss
+    _, l = session.run(
+        [optimizer, loss],
+        feed_dict={features: train_features, labels: train_labels})
+
+# Print loss
+print('Loss: {}'.format(l))
+-----------------------------------------------------
+# quiz_solution
+# Quiz Solution
+# Note: You can't run code in this tab
+import tensorflow as tf
+
+def get_weights(n_features, n_labels):
+    """
+    Return TensorFlow weights
+    :param n_features: Number of features
+    :param n_labels: Number of labels
+    :return: TensorFlow weights
+    """
+    # TODO: Return weights
+    return tf.Variable(tf.truncated_normal((n_features, n_labels)))
+
+
+def get_biases(n_labels):
+    """
+    Return TensorFlow bias
+    :param n_labels: Number of labels
+    :return: TensorFlow bias
+    """
+    # TODO: Return biases
+    return tf.Variable(tf.zeros(n_labels))
+
+
+def linear(input, w, b):
+    """
+    Return linear function in TensorFlow
+    :param input: TensorFlow input
+    :param w: TensorFlow weights
+    :param b: TensorFlow biases
+    :return: TensorFlow linear function
+    """
+    # TODO: Linear Function (xW + b)
+    return tf.add(tf.matmul(input, w), b)
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+[注]
+++++++++++++++++++++++++++++++
+///*计算线性函数y=xW+b*///
+1.tf.Variable()类创建一个 tensor，其初始值可以被改变，就像普通的 Python 变量一样。
+-------------code 1-----------
+x = tf.Variable(5)
+------------------------------
+2.tf.global_variables_initializer() 函数来初始化所有可变 tensor。
+-------------code 2-----------
+init = tf.global_variables_initializer()
+with tf.Session() as sess:
+    sess.run(init)
+------------------------------
+3.tf.truncated_normal() 函数从一个正态分布中生成随机数。
+-------------code 3-----------
+n_features = 120
+n_labels = 5
+weights = tf.Variable(tf.truncated_normal((n_features, n_labels)))
+------------------------------
+4.tf.zeros() 函数返回一个都是 0 的 tensor。
+-------------code 4-----------
+n_labels = 5
+bias = tf.Variable(tf.zeros(n_labels))
+------------------------------
+5.因为 xW + b 中的 xW 是矩阵相乘，所以你要用 tf.matmul() 函数，而不是 tf.multiply()。不要忘记矩阵相乘的规则，tf.matmul(a,b) 不等于 tf.matmul(b,a)。
+========================================================
+=================TensorFlow Softmax=====================
+========================================================
+# quiz.py
+# Quiz Solution
+# Note: You can't run code in this tab
+import tensorflow as tf
+
+
+def run():
+    output = None
+    logit_data = [2.0, 1.0, 0.1]
+    logits = tf.placeholder(tf.float32)
+
+    softmax = tf.nn.softmax(logits)
+
+    with tf.Session() as sess:
+        output = sess.run(softmax, feed_dict={logits: logit_data})
+
+    return output
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+[注]
+++++++++++++++++++++++++++++++
+///*tf.nn.softmax()*///
+实现了 softmax 函数，它输入 logits，返回 softmax 激活函数。
+-------------code 1-----------
+x = tf.nn.softmax([2.0, 1.0, 0.2])
+------------------------------
+========================================================
+===================One-Hot Encoding=====================
+========================================================
+# test.py
+#scikit-learn 的 LabelBinarizer 函数可以很方便地把你的目标（labels）转化成独热编码向量。
+import numpy as np
+from sklearn import preprocessing
+
+# Example labels 示例 labels
+labels = np.array([1,5,3,2,1,4,2,1,3])
+
+# Create the encoder 创建编码器
+lb = preprocessing.LabelBinarizer()
+
+# Here the encoder finds the classes and assigns one-hot vectors 
+# 编码器找到类别并分配 one-hot 向量
+lb.fit(labels)
+
+# And finally, transform the labels into one-hot encoded vectors
+# 最后把目标（lables）转换成独热编码的（one-hot encoded）向量
+lb.transform(labels)
+>>> array([[1, 0, 0, 0, 0],
+           [0, 0, 0, 0, 1],
+           [0, 0, 1, 0, 0],
+           [0, 1, 0, 0, 0],
+           [1, 0, 0, 0, 0],
+           [0, 0, 0, 1, 0],
+           [0, 1, 0, 0, 0],
+           [1, 0, 0, 0, 0],
+           [0, 0, 1, 0, 0]])
+
+========================================================
+=========TensorFlow 中的交叉熵（Cross Entropy）==========
+========================================================
+# test.py
+# Quiz Solution
+# Note: You can't run code in this tab
+import tensorflow as tf
+
+softmax_data = [0.7, 0.2, 0.1]
+one_hot_data = [1.0, 0.0, 0.0]
+
+softmax = tf.placeholder(tf.float32)
+one_hot = tf.placeholder(tf.float32)
+
+# ToDo: Print cross entropy from session
+cross_entropy = -tf.reduce_sum(tf.multiply(one_hot, tf.log(softmax)))
+
+with tf.Session() as sess:
+    print(sess.run(cross_entropy, feed_dict={softmax: softmax_data, one_hot: one_hot_data}))
+～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+[注]
+++++++++++++++++++++++++++++++
+///*Reduce Sum*///
+tf.reduce_sum() 函数输入一个序列，返回它们的和
+-------------code 1-----------
+x = tf.reduce_sum([1, 2, 3, 4, 5])  # 15
+------------------------------
+++++++++++++++++++++++++++++++
+///*Natural Log*///
+tf.log() 所做跟你所想的一样，它返回所输入值的自然对数。
+-------------code 1-----------
+x = tf.log(100)  # 4.60517
+------------------------------
+========================================================
+=======================计算稳定性=======================
+========================================================
+#a big number add with several small numbers
+a = 1000000000
+for i in range(1000000):
+    a = a + 1e-6
+print(a - 1000000000)
